@@ -93,14 +93,24 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.2</version>
 				<configuration>
+					<!-- Google's errorprone is used for more code quality checking -->
+					<compilerId>javac-with-errorprone</compilerId>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 					<compilerArgs>
 						<arg>-Xlint</arg>
 					</compilerArgs>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 					<!-- Set to false because there is a bug that inverts the meaning -->
 					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.plexus</groupId>
+						<artifactId>plexus-compiler-javac-errorprone</artifactId>
+						<version>2.5</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
@@ -152,34 +162,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.6.1</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.8.2</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>2.5.2</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.7</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-site-plugin</artifactId>
-				<version>3.4</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
 			</plugin>
 
 			<!-- Code quality -->
@@ -259,6 +241,77 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Artifact shrinking -->
+			
+			<plugin>
+				<groupId>com.github.wvengen</groupId>
+				<artifactId>proguard-maven-plugin</artifactId>
+				<version>2.0.8</version>
+				<configuration>
+					<libs>
+						<lib>${java.home}/lib/rt.jar</lib>
+						<lib>${java.home}/lib/jsse.jar</lib>
+					</libs>
+					<proguardVersion>5.2</proguardVersion>
+					<injarNotExistsSkip>true</injarNotExistsSkip>
+					<addMavenDescriptor>true</addMavenDescriptor>
+					<!-- Uncomment if you want a shrunk uber-jar -->
+					<!-- <includeDependencyInjar>true</includeDependencyInjar> -->
+					<options>
+						<!-- Disable optimization if it's causing problems -->
+						<!-- <option>-dontoptimize</option> -->
+						<option>-dontobfuscate</option>
+						<option>-allowaccessmodification</option>
+						<option>-keepclasseswithmembers public class * { public static
+							void main(java.lang.String[]); }</option>
+					</options>
+				</configuration>
+				<executions>
+					<execution>
+						<id>shrink</id>
+						<goals>
+							<goal>proguard</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
+
+		<!-- Included for defining hard versions of core plugins -->
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.6.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.8.2</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.5.2</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.4</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.18.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>
