@@ -254,8 +254,6 @@
 						<lib>${java.home}/lib/jsse.jar</lib>
 					</libs>
 					<proguardVersion>5.2</proguardVersion>
-					<injarNotExistsSkip>true</injarNotExistsSkip>
-					<addMavenDescriptor>true</addMavenDescriptor>
 					<!-- Uncomment if you want a shrunk uber-jar -->
 					<!-- <includeDependencyInjar>true</includeDependencyInjar> -->
 					<options>
