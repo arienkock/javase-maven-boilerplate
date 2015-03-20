@@ -1,0 +1,11 @@
+<FindBugsFilter>
+  <!--
+  e.g. 
+  <And>
+    <Class name="<fully qualified classname>"/>
+    <Method name="<method name>"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+    <Bug code="EI"/>
+  </And> 
+  -->
+</FindBugsFilter>
