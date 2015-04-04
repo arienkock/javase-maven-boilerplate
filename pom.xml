@@ -199,7 +199,7 @@
 				<artifactId>findbugs-maven-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<excludeFilterFile>findbugs-exclude.xml</excludeFilterFile>
+					<excludeFilterFile>src/build/findbugs-exclude.xml</excludeFilterFile>
 					<threshold>Normal</threshold>
 					<effort>Max</effort>
 					<xmlOutput>true</xmlOutput>
@@ -212,7 +212,7 @@
 					<execution>
 						<phase>validate</phase>
 						<configuration>
-						<configLocation>checkstyle.xml</configLocation>
+						<configLocation>src/build/checkstyle.xml</configLocation>
 							<encoding>UTF-8</encoding>
 							<consoleOutput>true</consoleOutput>
 							<failsOnError>true</failsOnError>
