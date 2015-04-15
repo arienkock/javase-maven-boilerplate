@@ -1,9 +1,19 @@
 package example;
 
-import java.util.Arrays;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+
+@Controller
 public class Main {
-	public static void main(String[] args) {
-		System.out.println(Arrays.toString(args));
+	@RequestMapping
+	@ResponseBody
+	public  String name() {
+		return "hello";
 	}
+
+    public static void main(String[] args) {
+    }
+
 }
