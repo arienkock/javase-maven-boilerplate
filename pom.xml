@@ -27,9 +27,15 @@
 		<jetty.version>9.3.0.M2</jetty.version>
 		<spring.version>4.1.6.RELEASE</spring.version>
 		<spring.security.version>4.0.0.RELEASE</spring.security.version>
+		<spring-boot.version>1.2.3.RELEASE</spring-boot.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -54,6 +60,16 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
@@ -89,6 +105,16 @@
 			<version>3.1.0</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>8.1.10.v20130312</version>
+		</dependency>
+		<!-- <dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-runner</artifactId>
+			<version>${jetty.version}</version>
+		</dependency> -->
 
 		<!-- Test -->
 
@@ -107,11 +133,6 @@
 
 		<!-- Logging -->
 
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.3</version>
-		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -136,7 +157,6 @@
 			<version>3.3.2</version>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 
@@ -155,7 +175,11 @@
 							<value>src/dev/logback.xml</value>
 						</systemProperty>
 					</systemProperties>
+					<webApp>
+						<contextPath>/path</contextPath>
+					</webApp>
 				</configuration>
+
 				<executions>
 					<execution>
 						<id>default-cli</id>
@@ -171,29 +195,6 @@
 								</systemProperty>
 							</systemProperties>
 						</configuration>
-					</execution>
-					<execution>
-						<id>start-jetty</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>deploy-war</goal>
-						</goals>
-						<configuration>
-							<scanIntervalSeconds>0</scanIntervalSeconds>
-							<systemProperties>
-								<systemProperty>
-									<name>spring.profiles.active</name>
-									<value>test</value>
-								</systemProperty>
-							</systemProperties>
-						</configuration>
-					</execution>
-					<execution>
-						<id>stop-jetty</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -212,6 +213,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<!-- Core -->
 
 			<plugin>
@@ -381,6 +383,10 @@
 						</goals>
 						<configuration>
 							<failOnWarning>true</failOnWarning>
+							<ignoreNonCompile>true</ignoreNonCompile>
+							<ignoredDependencies>
+								<value>org.slf4j:jcl-over-slf4j::</value>
+							</ignoredDependencies>
 						</configuration>
 					</execution>
 				</executions>
@@ -407,40 +413,86 @@
 				</executions>
 			</plugin>
 
-			<!-- Artifact shrinking -->
-
-			<plugin>
-				<groupId>com.github.wvengen</groupId>
-				<artifactId>proguard-maven-plugin</artifactId>
-				<version>2.0.8</version>
-				<configuration>
-					<injar>${project.build.finalName}</injar>
-					<libs>
-						<lib>${java.home}/lib/rt.jar</lib>
-						<lib>${java.home}/lib/jsse.jar</lib>
-					</libs>
-					<proguardVersion>5.2</proguardVersion>
-					<!-- Uncomment if you want a shrunk uber-jar -->
-					<!-- <includeDependencyInjar>true</includeDependencyInjar> -->
-					<options>
-						<!-- Disable optimization if it's causing problems -->
-						<!-- <option>-dontoptimize</option> -->
-						<option>-dontobfuscate</option>
-						<option>-allowaccessmodification</option>
-						<option>-keepclasseswithmembers public class * { public static
-							void main(java.lang.String[]); }</option>
-					</options>
-				</configuration>
-				<executions>
-					<execution>
-						<id>shrink</id>
-						<goals>
-							<goal>proguard</goal>
-						</goals>
-						<phase>package</phase>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>ci</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.jetty</groupId>
+						<artifactId>jetty-maven-plugin</artifactId>
+						<version>${jetty.version}</version>
+						<executions>
+							<execution>
+								<id>start-jetty</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>deploy-war</goal>
+								</goals>
+								<configuration>
+									<scanIntervalSeconds>0</scanIntervalSeconds>
+									<systemProperties>
+										<systemProperty>
+											<name>spring.profiles.active</name>
+											<value>test</value>
+										</systemProperty>
+									</systemProperties>
+								</configuration>
+							</execution>
+							<execution>
+								<id>stop-jetty</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>proguard</id>
+			<build>
+				<plugins>
+					<!-- Artifact shrinking -->
+					<plugin>
+						<groupId>com.github.wvengen</groupId>
+						<artifactId>proguard-maven-plugin</artifactId>
+						<version>2.0.8</version>
+						<configuration>
+							<injar>${project.build.finalName}.war</injar>
+							<libs>
+								<lib>${java.home}/lib/rt.jar</lib>
+								<lib>${java.home}/lib/jsse.jar</lib>
+							</libs>
+							<proguardVersion>5.2</proguardVersion>
+							<!-- Uncomment if you want a shrunk uber-jar -->
+							<!-- <includeDependencyInjar>true</includeDependencyInjar> -->
+							<options>
+								<!-- Disable optimization if it's causing problems -->
+								<!-- <option>-dontoptimize</option> -->
+								<option>-dontobfuscate</option>
+								<option>-allowaccessmodification</option>
+								<option>-keepclasseswithmembers public class * { public static
+									void main(java.lang.String[]); }</option>
+								<option>-dontnote</option>
+							</options>
+						</configuration>
+						<executions>
+							<execution>
+								<id>shrink</id>
+								<goals>
+									<goal>proguard</goal>
+								</goals>
+								<phase>package</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
